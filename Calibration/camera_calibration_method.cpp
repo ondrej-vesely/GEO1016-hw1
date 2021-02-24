@@ -58,6 +58,14 @@ bool CameraCalibration::calibration(
     std::cout << "TODO: After implementing the calibration() function, I will disable all unrelated output ...\n\n";
 
     // TODO: check if input is valid (e.g., number of correspondences >= 6, sizes of 2D/3D points must match)
+    if (points_2d.size() >= 6 && points_3d.size() >= 6 && points_2d.size() == points_3d.size())
+        {
+        std::cout << "\t"<< "This is valid" << std::endl;
+    }
+    else
+    {
+        std::cout << "\t" << "This is not Valid" << std::endl;
+    }
 
     // TODO: construct the P matrix (so P * m = 0).
 
@@ -70,10 +78,10 @@ bool CameraCalibration::calibration(
     // TODO: extract extrinsic parameters from M.
 
     // TODO: uncomment the line below to return true when testing your algorithm and in you final submission.
-    //return false;
+    return false;
 
 
-
+    
     // TODO: The following code is just an example showing you SVD decomposition, matrix inversion, and some related.
     // TODO: Delete the code below (or change "#if 1" in the first line to "#if 0") in you final submission.
 #if 1
@@ -104,8 +112,8 @@ bool CameraCalibration::calibration(
 
     // Define an m-by-n double valued matrix.
     // Here I use the above array to initialize it. You can also use A(i, j) to initialize/modify/access its elements.
-    const int m = 6, n = 5;
-    Matrix<double> A(m, n, array.data());    // 'array.data()' returns a pointer to the array.
+    const int m = 2*points_3d.size(), n = 12;
+    Matrix<double> A(m, n, 0.0);    // 'array.data()' returns a pointer to the array.
     std::cout << "M: \n" << A << std::endl;
 
     Matrix<double> U(m, m, 0.0);   // initialized with 0s
