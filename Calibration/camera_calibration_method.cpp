@@ -58,16 +58,51 @@ bool CameraCalibration::calibration(
     std::cout << "TODO: After implementing the calibration() function, I will disable all unrelated output ...\n\n";
 
     // TODO: check if input is valid (e.g., number of correspondences >= 6, sizes of 2D/3D points must match)
-    if (points_2d.size() >= 6 && points_3d.size() >= 6 && points_2d.size() == points_3d.size())
+    if (points_2d.size() >= 6 && points_2d.size() == points_3d.size())
         {
-        std::cout << "\t"<< "This is valid" << std::endl;
+        std::cout << "\t"<< "Input is valid" << std::endl;
     }
     else
     {
-        std::cout << "\t" << "This is not Valid" << std::endl;
+        std::cout << "\t" << "Input is not valid" << std::endl;
+        return false;
     }
 
     // TODO: construct the P matrix (so P * m = 0).
+    Matrix<double> P(2*points_2d.size(), 12, 0.0);
+    for (int i = 0; i < 2*points_2d.size(); i++) {
+        if (i % 2 == 0) { // if row number is even (starts with 0)
+            P(i, 0) = points_3d[i / 2][0];
+            P(i, 1) = points_3d[i / 2][1];
+            P(i, 2) = points_3d[i / 2][2];
+            P(i, 3) = 1;
+            P(i, 4) = 0;
+            P(i, 5) = 0;
+            P(i, 6) = 0;
+            P(i, 7) = 0;
+            P(i, 8) = points_3d[i / 2][0] * -1 * points_2d[i / 2][0];
+            P(i, 9) = points_3d[i / 2][1] * -1 * points_2d[i / 2][0];
+            P(i, 10) = points_3d[i / 2][2] * -1 * points_2d[i / 2][0];
+            P(i, 11) = -1 * points_2d[i / 2][0];
+        }
+        else { // if row number is odd
+            P(i, 0) = 0;
+            P(i, 1) = 0;
+            P(i, 2) = 0;
+            P(i, 3) = 0;
+            P(i, 4) = points_3d[(i - 1) / 2][0];
+            P(i, 5) = points_3d[(i - 1) / 2][1];
+            P(i, 6) = points_3d[(i - 1) / 2][2];
+            P(i, 7) = 1;
+            P(i, 8) = points_3d[(i - 1) / 2][0] * -1 * points_2d[(i - 1) / 2][0];
+            P(i, 9) = points_3d[(i - 1) / 2][1] * -1 * points_2d[(i - 1) / 2][0];
+            P(i, 10) = points_3d[(i - 1) / 2][2] * -1 * points_2d[(i - 1) / 2][0];
+            P(i, 11) = -1 * points_2d[(i - 1) / 2][1];
+        }
+    }
+    std::cout << "P: \n" << P << std::endl;
+
+    
 
     // TODO: solve for M (the whole projection matrix, i.e., M = K * [R, t]) using SVD decomposition.
     //   Optional: you can check if your M is correct by applying M on the 3D points. If correct, the projected point
