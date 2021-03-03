@@ -87,9 +87,9 @@ bool CameraCalibration::calibration(
             P(i, 5) = points_3d[(i - 1) / 2][1];
             P(i, 6) = points_3d[(i - 1) / 2][2];
             P(i, 7) = 1;
-            P(i, 8) = points_3d[(i - 1) / 2][0] * -1 * points_2d[(i - 1) / 2][0];
-            P(i, 9) = points_3d[(i - 1) / 2][1] * -1 * points_2d[(i - 1) / 2][0];
-            P(i, 10) = points_3d[(i - 1) / 2][2] * -1 * points_2d[(i - 1) / 2][0];
+            P(i, 8) = points_3d[(i - 1) / 2][0] * -1 * points_2d[(i - 1) / 2][1];
+            P(i, 9) = points_3d[(i - 1) / 2][1] * -1 * points_2d[(i - 1) / 2][1];
+            P(i, 10) = points_3d[(i - 1) / 2][2] * -1 * points_2d[(i - 1) / 2][1];
             P(i, 11) = -1 * points_2d[(i - 1) / 2][1];
         }
     }
@@ -117,6 +117,7 @@ bool CameraCalibration::calibration(
     // Check 4: according to the definition, P = U * S * V^T
     std::cout << "P - U * S * V^T: \n" << P - U * S * transpose(V) << std::endl;
 
+    
     // Initialise M
     Matrix<double> M(3, 4, 0.0);
 
@@ -135,6 +136,17 @@ bool CameraCalibration::calibration(
     //             should be very close to your input images points.
 
     // TODO: extract intrinsic parameters from M.
+    
+    // define a1, a2, a3
+
+    vec3 a1 = vec3(M(0, 0), M(0, 1), M(0, 2));
+    vec3 a2 = vec3(M(1, 0), M(1, 1), M(1, 2));
+    vec3 a3 = vec3(M(2, 0), M(2, 1), M(2, 2));
+
+    double rho = 1 / a1.length();
+    cx = pow(rho, 2) * dot(a1, a3);         // cx and cy have been declared in line 50. Is this the right way to "fill in" the values?
+    cy = pow(rho, 2) * dot(a2, a3);
+    
 
     // TODO: extract extrinsic parameters from M.
 
