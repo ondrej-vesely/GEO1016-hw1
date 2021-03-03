@@ -69,27 +69,20 @@ bool CameraCalibration::calibration(
     }
 
     // TODO: construct the P matrix (so P * m = 0).
-    Matrix<double> P(2*points_2d.size(), 12, 0.0);
+    const int m = 2 * points_3d.size(), n = 12;
+    Matrix<double> P(m, n, 0.0);
     for (int i = 0; i < 2*points_2d.size(); i++) {
         if (i % 2 == 0) { // if row number is even (starts with 0)
             P(i, 0) = points_3d[i / 2][0];
             P(i, 1) = points_3d[i / 2][1];
             P(i, 2) = points_3d[i / 2][2];
             P(i, 3) = 1;
-            P(i, 4) = 0;
-            P(i, 5) = 0;
-            P(i, 6) = 0;
-            P(i, 7) = 0;
             P(i, 8) = points_3d[i / 2][0] * -1 * points_2d[i / 2][0];
             P(i, 9) = points_3d[i / 2][1] * -1 * points_2d[i / 2][0];
             P(i, 10) = points_3d[i / 2][2] * -1 * points_2d[i / 2][0];
             P(i, 11) = -1 * points_2d[i / 2][0];
         }
         else { // if row number is odd
-            P(i, 0) = 0;
-            P(i, 1) = 0;
-            P(i, 2) = 0;
-            P(i, 3) = 0;
             P(i, 4) = points_3d[(i - 1) / 2][0];
             P(i, 5) = points_3d[(i - 1) / 2][1];
             P(i, 6) = points_3d[(i - 1) / 2][2];
@@ -103,8 +96,41 @@ bool CameraCalibration::calibration(
     std::cout << "P: \n" << P << std::endl;
 
     
-
     // TODO: solve for M (the whole projection matrix, i.e., M = K * [R, t]) using SVD decomposition.
+    Matrix<double> U(m, m, 0.0);   // initialized with 0s
+    Matrix<double> S(m, n, 0.0);   // initialized with 0s
+    Matrix<double> V(n, n, 0.0);   // initialized with 0s
+
+    // Compute the SVD decomposition of A
+    svd_decompose(P, U, S, V);
+
+    std::cout << "U: \n" << U << std::endl;
+    std::cout << "S: \n" << S << std::endl;
+    std::cout << "V: \n" << V << std::endl;
+
+    // Check 1: U is orthogonal, so U * U^T must be identity
+    std::cout << "U*U^T: \n" << U * transpose(U) << std::endl;
+
+    // Check 2: V is orthogonal, so V * V^T must be identity
+    std::cout << "V*V^T: \n" << V * transpose(V) << std::endl;
+
+    // Check 4: according to the definition, P = U * S * V^T
+    std::cout << "P - U * S * V^T: \n" << P - U * S * transpose(V) << std::endl;
+
+    // Initialise M
+    Matrix<double> M(3, 4, 0.0);
+
+    // Fill M with last column of V
+    int k = 0;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 4; j++) {
+            M(i, j) = V(k, 11);
+            k++;
+        }
+    }
+
+    std::cout << "M: \n" << M << std::endl;
+
     //   Optional: you can check if your M is correct by applying M on the 3D points. If correct, the projected point
     //             should be very close to your input images points.
 
@@ -147,16 +173,16 @@ bool CameraCalibration::calibration(
 
     // Define an m-by-n double valued matrix.
     // Here I use the above array to initialize it. You can also use A(i, j) to initialize/modify/access its elements.
-    const int m = 2*points_3d.size(), n = 12;
+    //const int m = 2*points_3d.size(), n = 12;
     Matrix<double> A(m, n, 0.0);    // 'array.data()' returns a pointer to the array.
     std::cout << "M: \n" << A << std::endl;
 
-    Matrix<double> U(m, m, 0.0);   // initialized with 0s
-    Matrix<double> S(m, n, 0.0);   // initialized with 0s
-    Matrix<double> V(n, n, 0.0);   // initialized with 0s
+    //Matrix<double> U(m, m, 0.0);   // initialized with 0s
+    //Matrix<double> S(m, n, 0.0);   // initialized with 0s
+    //Matrix<double> V(n, n, 0.0);   // initialized with 0s
 
     // Compute the SVD decomposition of A
-    svd_decompose(A, U, S, V);
+    //svd_decompose(A, U, S, V);
 
     // Now let's check if the SVD result is correct
 
