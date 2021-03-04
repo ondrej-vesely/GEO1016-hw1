@@ -143,11 +143,20 @@ bool CameraCalibration::calibration(
     vec3 a2 = vec3(M(1, 0), M(1, 1), M(1, 2));
     vec3 a3 = vec3(M(2, 0), M(2, 1), M(2, 2));
 
-    double rho = 1 / a1.length();
+    double rho = 1 / a3.length();
     cx = pow(rho, 2) * dot(a1, a3);         // cx and cy have been declared in line 50. Is this the right way to "fill in" the values?
     cy = pow(rho, 2) * dot(a2, a3);
     
+    // theta
+    double theta = acos(-(dot(cross(a1, a3), cross(a2, a3)) / (norm(cross(a1, a3)) * norm(cross(a2, a3)))));
+    // fx
+    double alpha = pow(rho, 2) * cross(a1, a3).length() * sin(theta);
+    // fy
+    double beta = pow(rho, 2) * cross(a2, a3).length() * sin(theta);
+    //skewness
+    skew = (float)(- alpha * cos(theta));
 
+    std::cout << "Intrinsic parameters: " " cx: " << cx << " cy: " << cy << " theta: " << theta << " fx: " << alpha << " fy: " << beta << " skewness: " << skew << std::endl;
     // TODO: extract extrinsic parameters from M.
 
     // TODO: uncomment the line below to return true when testing your algorithm and in you final submission.
