@@ -151,13 +151,22 @@ bool CameraCalibration::calibration(
     double theta = acos(-(dot(cross(a1, a3), cross(a2, a3)) / (norm(cross(a1, a3)) * norm(cross(a2, a3)))));
     // fx
     double alpha = pow(rho, 2) * cross(a1, a3).length() * sin(theta);
+    fx = (float) alpha;
     // fy
     double beta = pow(rho, 2) * cross(a2, a3).length() * sin(theta);
+    fy = (float) beta;
     //skewness
-    skew = (float)(- alpha * cos(theta));
-
-    std::cout << "Intrinsic parameters: " " cx: " << cx << " cy: " << cy << " theta: " << theta << " fx: " << alpha << " fy: " << beta << " skewness: " << skew << std::endl;
+    skew = (float)(- fx * cos(theta));
+    std::cout << "Intrinsic parameters: " " cx: " << cx << " cy: " << cy << " theta: " << theta << " fx: " << fx << " fy: " << fy << " skewness: " << skew << std::endl;
     // TODO: extract extrinsic parameters from M.
+    //b1, b2, b3
+    double b1 = M(0, 3);
+    double b2 = M(1, 3);
+    double b3 = M(2, 3);
+    // r1, r2, r3
+    auto r1 = (cross(a2, a3)) / (cross(a2, a3).length());
+    auto r3 = rho * a3;
+    auto r2 = cross(r3, r1);
 
     // TODO: uncomment the line below to return true when testing your algorithm and in you final submission.
     return false;
