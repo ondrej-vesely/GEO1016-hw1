@@ -57,20 +57,20 @@ bool CameraCalibration::calibration(
               << "\t" << __FILE__ << std::endl;
     std::cout << "TODO: After implementing the calibration() function, I will disable all unrelated output ...\n\n";
 
-    // TODO: check if input is valid (e.g., number of correspondences >= 6, sizes of 2D/3D points must match)
-    if (points_2d.size() >= 6 && points_2d.size() == points_3d.size())
-        {
+    // check if input is valid (e.g., number of correspondences >= 6, sizes of 2D/3D points must match)
+    if (points_2d.size() >= 6 && points_2d.size() == points_3d.size()) {
         std::cout << "\t"<< "Input is valid" << std::endl;
     }
-    else
-    {
+    else {
         std::cout << "\t" << "Input is not valid" << std::endl;
         return false;
     }
 
     // TODO: construct the P matrix (so P * m = 0).
-    const int m = 2 * points_3d.size(), n = 12;
+    const int m = 2 * points_3d.size();
+    const int n = 12;
     Matrix<double> P(m, n, 0.0);
+
     for (int i = 0; i < 2*points_2d.size(); i++) {
         if (i % 2 == 0) { // if row number is even (starts with 0)
             P(i, 0) = points_3d[i / 2][0];
@@ -93,7 +93,7 @@ bool CameraCalibration::calibration(
             P(i, 11) = -1 * points_2d[(i - 1) / 2][1];
         }
     }
-    std::cout << "P: \n" << P << std::endl;
+    std::cout << "P-Matrix: \n" << P << std::endl;
 
     
     // TODO: solve for M (the whole projection matrix, i.e., M = K * [R, t]) using SVD decomposition.
@@ -114,7 +114,7 @@ bool CameraCalibration::calibration(
     // Check 2: V is orthogonal, so V * V^T must be identity
     std::cout << "V*V^T: \n" << V * transpose(V) << std::endl;
 
-    // Check 4: according to the definition, P = U * S * V^T
+    // Check 3: according to the definition, P = U * S * V^T
     std::cout << "P - U * S * V^T: \n" << P - U * S * transpose(V) << std::endl;
 
     
@@ -135,10 +135,9 @@ bool CameraCalibration::calibration(
     //   Optional: you can check if your M is correct by applying M on the 3D points. If correct, the projected point
     //             should be very close to your input images points.
 
-    // TODO: extract intrinsic parameters from M.
-    
-    // define a1, a2, a3
 
+    // Extract intrinsic parameters from M.
+    // Define a1, a2, a3
     vec3 a1 = vec3(M(0, 0), M(0, 1), M(0, 2));
     vec3 a2 = vec3(M(1, 0), M(1, 1), M(1, 2));
     vec3 a3 = vec3(M(2, 0), M(2, 1), M(2, 2));
@@ -155,11 +154,11 @@ bool CameraCalibration::calibration(
     // fy
     double beta = pow(rho, 2) * cross(a2, a3).length() * sin(theta);
     fy = (float) beta;
-    //skewness
+    // skewness
     skew = (float)(- fx * cos(theta));
     std::cout << "Intrinsic parameters: " " cx: " << cx << " cy: " << cy << " theta: " << theta << " fx: " << fx << " fy: " << fy << " skewness: " << skew << std::endl;
     // TODO: extract extrinsic parameters from M.
-    //b1, b2, b3
+    // b1, b2, b3
     double b1 = M(0, 3);
     double b2 = M(1, 3);
     double b3 = M(2, 3);
