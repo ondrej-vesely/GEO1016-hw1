@@ -25,9 +25,7 @@
 #include "camera_calibration.h"
 #include "matrix_algo.h"
 
-
 using namespace easy3d;
-
 
 
 /**
@@ -72,38 +70,39 @@ bool CameraCalibration::calibration(
     Matrix<double> P(m, n, 0.0);
 
     for (int i = 0; i < 2*points_2d.size(); i++) {
+        const int j = i/2; 
         if (i % 2 == 0) { // if row number is even (starts with 0)
-            P(i, 0) = points_3d[i / 2][0];
-            P(i, 1) = points_3d[i / 2][1];
-            P(i, 2) = points_3d[i / 2][2];
+            P(i, 0) = points_3d[j][0];
+            P(i, 1) = points_3d[j][1];
+            P(i, 2) = points_3d[j][2];
             P(i, 3) = 1;
-            P(i, 8) = points_3d[i / 2][0] * -1 * points_2d[i / 2][0];
-            P(i, 9) = points_3d[i / 2][1] * -1 * points_2d[i / 2][0];
-            P(i, 10) = points_3d[i / 2][2] * -1 * points_2d[i / 2][0];
-            P(i, 11) = -1 * points_2d[i / 2][0];
+            P(i, 8) = points_3d[j][0] * -1 * points_2d[2][0];
+            P(i, 9) = points_3d[j][1] * -1 * points_2d[j][0];
+            P(i, 10) = points_3d[j][2] * -1 * points_2d[j][0];
+            P(i, 11) = -1 * points_2d[j][0];
         }
         else { // if row number is odd
-            P(i, 4) = points_3d[(i - 1) / 2][0];
-            P(i, 5) = points_3d[(i - 1) / 2][1];
-            P(i, 6) = points_3d[(i - 1) / 2][2];
+            P(i, 4) = points_3d[j][0];
+            P(i, 5) = points_3d[j][1];
+            P(i, 6) = points_3d[j][2];
             P(i, 7) = 1;
-            P(i, 8) = points_3d[(i - 1) / 2][0] * -1 * points_2d[(i - 1) / 2][1];
-            P(i, 9) = points_3d[(i - 1) / 2][1] * -1 * points_2d[(i - 1) / 2][1];
-            P(i, 10) = points_3d[(i - 1) / 2][2] * -1 * points_2d[(i - 1) / 2][1];
-            P(i, 11) = -1 * points_2d[(i - 1) / 2][1];
+            P(i, 8) = points_3d[j][0] * -1 * points_2d[j][1];
+            P(i, 9) = points_3d[j][1] * -1 * points_2d[j][1];
+            P(i, 10) = points_3d[j][2] * -1 * points_2d[j][1];
+            P(i, 11) = -1 * points_2d[j][1];
         }
     }
     std::cout << "P-Matrix: \n" << P << std::endl;
 
     
     // TODO: solve for M (the whole projection matrix, i.e., M = K * [R, t]) using SVD decomposition.
-    Matrix<double> U(m, m, 0.0);   // initialized with 0s
-    Matrix<double> S(m, n, 0.0);   // initialized with 0s
-    Matrix<double> V(n, n, 0.0);   // initialized with 0s
-
-    // Compute the SVD decomposition of A
+    // Compute the SVD decomposition of P-matrix
+    Matrix<double> U(m, m, 0.0);
+    Matrix<double> S(m, n, 0.0); 
+    Matrix<double> V(n, n, 0.0); 
     svd_decompose(P, U, S, V);
 
+    // Check the results
     std::cout << "U: \n" << U << std::endl;
     std::cout << "S: \n" << S << std::endl;
     std::cout << "V: \n" << V << std::endl;
@@ -114,10 +113,14 @@ bool CameraCalibration::calibration(
     // Check 2: V is orthogonal, so V * V^T must be identity
     std::cout << "V*V^T: \n" << V * transpose(V) << std::endl;
 
-    // Check 3: according to the definition, P = U * S * V^T
+    // Check 3: S must be a diagonal matrix
+    std::cout << "S: \n" << S << std::endl;
+
+    // Check 4: according to the definition, P = U * S * V^T
     std::cout << "P - U * S * V^T: \n" << P - U * S * transpose(V) << std::endl;
 
     
+
     // Initialise M
     Matrix<double> M(3, 4, 0.0);
 
