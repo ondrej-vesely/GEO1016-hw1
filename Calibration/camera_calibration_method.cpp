@@ -70,27 +70,17 @@ bool CameraCalibration::calibration(
     Matrix<double> P(m, n, 0.0);
 
     for (int i = 0; i < 2*points_2d.size(); i++) {
-        const int j = i/2; 
-        if (i % 2 == 0) {       // if row number is even (starts with 0)
-            P(i, 0) = points_3d[j][0];
-            P(i, 1) = points_3d[j][1];
-            P(i, 2) = points_3d[j][2];
-            P(i, 3) = 1.0;
-            P(i, 8) = points_3d[j][0] * -1.0 * points_2d[2][0];
-            P(i, 9) = points_3d[j][1] * -1.0 * points_2d[j][0];
-            P(i, 10) = points_3d[j][2] * -1.0 * points_2d[j][0];
-            P(i, 11) = -1.0 * points_2d[j][0];
-        }
-        else {                  // if row number is odd
-            P(i, 4) = points_3d[j][0];
-            P(i, 5) = points_3d[j][1];
-            P(i, 6) = points_3d[j][2];
-            P(i, 7) = 1;
-            P(i, 8) = points_3d[j][0] * -1.0 * points_2d[j][1];
-            P(i, 9) = points_3d[j][1] * -1.0 * points_2d[j][1];
-            P(i, 10) = points_3d[j][2] * -1.0 * points_2d[j][1];
-            P(i, 11) = -1.0 * points_2d[j][1];
-        }
+        const int h = i/2;              // half of i
+        const int shift = (i % 2) * 4;  // if row number is odd, shift first 4 by 4 to left
+
+        P(i, 0 + shift) = points_3d[h][0];
+        P(i, 1 + shift) = points_3d[h][1];
+        P(i, 2 + shift) = points_3d[h][2];
+        P(i, 3 + shift) = 1.0;
+        P(i, 8) = points_3d[h][0] * -1.0 * points_2d[h][i % 2];
+        P(i, 9) = points_3d[h][1] * -1.0 * points_2d[h][i % 2];
+        P(i, 10) = points_3d[h][2] * -1.0 * points_2d[h][i % 2];
+        P(i, 11) = -1.0 * points_2d[h][i % 2];
     }
     std::cout << "P-Matrix: \n" << P << std::endl;
 
