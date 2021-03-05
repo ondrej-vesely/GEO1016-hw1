@@ -150,21 +150,22 @@ bool CameraCalibration::calibration(
         << "\n" << "fy / beta: " << "\t" << fy
         << "\n" << "skew: " << "\t\t" << skew
         << "\n" << "theta: " << "\t\t" << theta
+        << "\n" << "ro: " << "\t\t" << rho
         << "\n\n";
 
     
     // Extract extrinsic parameters from M. 
-    // r1, r2, r3
+    // r1, r2, r3 rows
     vec3 r1 = (cross(a2, a3)) / (cross(a2, a3).length());
     vec3 r3 = rho * a3;
     vec3 r2 = cross(r3, r1);
 
-    // Set R output matrix
-    for (int i = 0; i < 3; i++) {
-        R[i, 0] = r1[i];
-        R[i, 1] = r2[i];
-        R[i, 2] = r3[i];
-    }
+    // Set rows of output R matrix
+    R = mat3(
+        r1[0], r1[1], r1[2],
+        r2[0], r2[1], r2[2],
+        r3[0], r3[1], r3[2]
+    );
 
     // Create K matrix
     Matrix<double> K(3, 3, std::vector<double> {
@@ -173,11 +174,11 @@ bool CameraCalibration::calibration(
         0,     0,                            1
     }.data());
 
-    // Calculate K inversed
+    // Calculate K inverse
     Matrix<double> K_inv(3, 3, 0.0);
     inverse(K, K_inv);
 
-    // Create b vector
+    // Extract b vector from M matrix
     Matrix<double> b(3, 1, std::vector<double> {
         M(0, 3), M(1, 3), M(2, 3)
     }.data());
@@ -185,7 +186,7 @@ bool CameraCalibration::calibration(
     // Calculate T matrix
     auto T = rho * K_inv * b;
 
-    // Set t output
+    // Set t output matrix
     for (int i = 0; i < 3; i++) { 
         t[i] = (float) T(i, 0); 
     }
