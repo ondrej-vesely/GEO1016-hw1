@@ -64,32 +64,32 @@ bool CameraCalibration::calibration(
         return false;
     }
 
-    // TODO: construct the P matrix (so P * m = 0).
+    // Construct the P matrix (so P * m = 0).
     const int m = 2 * points_3d.size();
     const int n = 12;
     Matrix<double> P(m, n, 0.0);
 
     for (int i = 0; i < 2*points_2d.size(); i++) {
         const int j = i/2; 
-        if (i % 2 == 0) { // if row number is even (starts with 0)
+        if (i % 2 == 0) {       // if row number is even (starts with 0)
             P(i, 0) = points_3d[j][0];
             P(i, 1) = points_3d[j][1];
             P(i, 2) = points_3d[j][2];
-            P(i, 3) = 1;
-            P(i, 8) = points_3d[j][0] * -1 * points_2d[2][0];
-            P(i, 9) = points_3d[j][1] * -1 * points_2d[j][0];
-            P(i, 10) = points_3d[j][2] * -1 * points_2d[j][0];
-            P(i, 11) = -1 * points_2d[j][0];
+            P(i, 3) = 1.0;
+            P(i, 8) = points_3d[j][0] * -1.0 * points_2d[2][0];
+            P(i, 9) = points_3d[j][1] * -1.0 * points_2d[j][0];
+            P(i, 10) = points_3d[j][2] * -1.0 * points_2d[j][0];
+            P(i, 11) = -1.0 * points_2d[j][0];
         }
-        else { // if row number is odd
+        else {                  // if row number is odd
             P(i, 4) = points_3d[j][0];
             P(i, 5) = points_3d[j][1];
             P(i, 6) = points_3d[j][2];
             P(i, 7) = 1;
-            P(i, 8) = points_3d[j][0] * -1 * points_2d[j][1];
-            P(i, 9) = points_3d[j][1] * -1 * points_2d[j][1];
-            P(i, 10) = points_3d[j][2] * -1 * points_2d[j][1];
-            P(i, 11) = -1 * points_2d[j][1];
+            P(i, 8) = points_3d[j][0] * -1.0 * points_2d[j][1];
+            P(i, 9) = points_3d[j][1] * -1.0 * points_2d[j][1];
+            P(i, 10) = points_3d[j][2] * -1.0 * points_2d[j][1];
+            P(i, 11) = -1.0 * points_2d[j][1];
         }
     }
     std::cout << "P-Matrix: \n" << P << std::endl;
@@ -119,7 +119,7 @@ bool CameraCalibration::calibration(
     // Check 4: according to the definition, P = U * S * V^T
     std::cout << "P - U * S * V^T: \n" << P - U * S * transpose(V) << std::endl;
 
-    
+
 
     // Initialise M
     Matrix<double> M(3, 4, 0.0);
