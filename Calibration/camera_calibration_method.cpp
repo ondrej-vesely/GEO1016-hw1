@@ -29,9 +29,6 @@ using namespace easy3d;
 
 
 /**
- * TODO: Finish this function for calibrating a camera from the corresponding 3D-2D point pairs.
- *       You may define a few functions for some sub-tasks.
- *
  * @param points_3d   An array of 3D points.
  * @param points_2d   An array of 2D points.
  * @return True on success, otherwise false. On success, the camera parameters are returned by
@@ -86,12 +83,24 @@ bool CameraCalibration::calibration(
     Matrix<double> V(n, n, 0.0); 
     svd_decompose(P, U, S, V);
 
+    // Initialise M
+    Matrix<double> M(3, 4, 0.0);
+    // Fill M with last column of V
+    int k = 0;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 4; j++) {
+            M(i, j) = V(k, 11);
+            k++;
+        }
+    }
+
     /*
     // Check the results
     std::cout << "P: \n" << P << std::endl;
     std::cout << "U: \n" << U << std::endl;
     std::cout << "S: \n" << S << std::endl;
     std::cout << "V: \n" << V << std::endl;
+    std::cout << "M: \n" << M << std::endl;
 
     // Check 1: U is orthogonal, so U * U^T must be identity
     std::cout << "U*U^T: \n" << U * transpose(U) << std::endl;
@@ -105,20 +114,6 @@ bool CameraCalibration::calibration(
     // Check 4: according to the definition, P = U * S * V^T
     std::cout << "P - U * S * V^T: \n" << P - U * S * transpose(V) << std::endl;
     */
-
-    // Initialise M
-    Matrix<double> M(3, 4, 0.0);
-
-    // Fill M with last column of V
-    int k = 0;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 4; j++) {
-            M(i, j) = V(k, 11);
-            k++;
-        }
-    }
-
-    // std::cout << "M: \n" << M << std::endl;
 
     //   Optional: you can check if your M is correct by applying M on the 3D points. If correct, the projected point
     //             should be very close to your input images points.
@@ -178,23 +173,27 @@ bool CameraCalibration::calibration(
         0,     0,                            1
     }.data());
 
+    // Calculate K inversed
+    Matrix<double> K_inv(3, 3, 0.0);
+    inverse(K, K_inv);
+
     // Create b vector
     Matrix<double> b(3, 1, std::vector<double> {
         M(0, 3), M(1, 3), M(2, 3)
     }.data());
 
     // Calculate T matrix
-    auto T = rho * K * b;
+    auto T = rho * K_inv * b;
 
     // Set t output
     for (int i = 0; i < 3; i++) { 
-        t[i] = T(i, 0); 
+        t[i] = (float) T(i, 0); 
     }
 
     std::cout << "Extrinsic parameters: "
-        << "\n" << "R matrix: " << "\n" << R
-        << ""   << "T vector: " << "\n" << t
-        << "\n";
+        << "\n" << "R: " << "\n" << R
+        << ""   << "T: " << "\n" << t
+        << "\n\n";
 
 
     return true;
