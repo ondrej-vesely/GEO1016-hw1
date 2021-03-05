@@ -117,7 +117,7 @@ bool CameraCalibration::calibration(
 
     //   Optional: you can check if your M is correct by applying M on the 3D points. If correct, the projected point
     //             should be very close to your input images points.
-    std::cout << "\n" << "Reconstructed 2D coordinates:" << "\n";
+    std::cout << "\n" << "Reconstructed 2D coordinates after applying M matrix:" << "\n";
 
     for (int i = 0; i < points_2d.size(); i++) {
         vec3 p3 = points_3d[i];
